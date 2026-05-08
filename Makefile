@@ -39,6 +39,7 @@ smoke: build
 
 lint:
 	npm run lint
+	npm run typecheck
 	npm run fmt:check
 	npm audit --audit-level=high
 

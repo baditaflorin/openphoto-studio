@@ -10,6 +10,16 @@ Browser-based photo editor with WASM-ready imaging tools and local WebGPU AI fea
 
 OpenPhoto Studio is a static GitHub Pages app for quick, private photo edits in the browser. It focuses on the 80% workflow most creators reach for first: import, adjust, mask, upscale, retouch, compare, and export without an account or subscription.
 
+![OpenPhoto Studio editor](docs/assets/screenshot.png)
+
+## What Works in v1
+
+- Import local images or load the built-in demo image.
+- Adjust exposure, contrast, saturation, warmth, shadows, highlights, sharpness, and vignette.
+- Run local worker-backed tools for auto tone, heuristic background removal, and 2x upscale.
+- Save/load the latest project in browser storage and export PNG, JPEG, or WebP.
+- See version and commit directly in the GitHub Pages UI.
+
 ## Quickstart
 
 ```bash
