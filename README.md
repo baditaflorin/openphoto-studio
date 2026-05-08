@@ -1,6 +1,10 @@
 # OpenPhoto Studio
 
-[Live site](https://baditaflorin.github.io/openphoto-studio/) · [GitHub repo](https://github.com/baditaflorin/openphoto-studio) · [Support via PayPal](https://www.paypal.com/paypalme/florinbadita)
+Live site: https://baditaflorin.github.io/openphoto-studio/
+
+GitHub repo: https://github.com/baditaflorin/openphoto-studio
+
+Support via PayPal: https://www.paypal.com/paypalme/florinbadita
 
 Browser-based photo editor with WASM-ready imaging tools and local WebGPU AI features.
 

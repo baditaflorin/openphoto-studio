@@ -26,8 +26,8 @@ export function App() {
         <div className="grid flex-1 items-center gap-6 py-8 lg:grid-cols-[0.95fr_1.05fr]">
           <section className="space-y-5">
             <p className="max-w-xl text-lg leading-8 text-slate-700">
-              A GitHub Pages app for import, adjust, mask, upscale, compare, and export workflows. Heavy imaging
-              engines are lazy-loaded only when you ask for them.
+              A GitHub Pages app for import, adjust, mask, upscale, compare, and export workflows. Heavy
+              imaging engines are lazy-loaded only when you ask for them.
             </p>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="metric">
@@ -45,14 +45,19 @@ export function App() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm" aria-label="Editor preview">
+          <section
+            className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+            aria-label="Editor preview"
+          >
             <div className="aspect-[4/3] overflow-hidden rounded-md bg-[linear-gradient(135deg,#111827,#0f766e_45%,#f97316)]">
               <div className="flex h-full items-end justify-between p-5 text-white">
                 <div>
                   <p className="text-sm uppercase tracking-wide opacity-80">v{__APP_VERSION__}</p>
                   <p className="text-2xl font-semibold">Commit {__COMMIT_SHA__}</p>
                 </div>
-                <p className="rounded-md bg-white/15 px-3 py-2 text-sm backdrop-blur">Editor loading scaffold</p>
+                <p className="rounded-md bg-white/15 px-3 py-2 text-sm backdrop-blur">
+                  Editor loading scaffold
+                </p>
               </div>
             </div>
           </section>
