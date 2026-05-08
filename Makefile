@@ -38,7 +38,7 @@ test-integration:
 	@printf "No separate integration suite for Mode A yet.\n"
 
 smoke: build
-	npm run smoke
+	./scripts/smoke.sh
 
 lint:
 	npm run lint
