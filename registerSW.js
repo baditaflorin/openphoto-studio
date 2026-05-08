@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/openphoto-studio/sw.js', { scope: '/openphoto-studio/' })})}
