@@ -1,6 +1,8 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help install-hooks dev build test test-integration smoke lint fmt pages-preview publish-pages clean hooks-pre-commit hooks-commit-msg hooks-pre-push
+VERSION ?= v$(shell node -p "require('./package.json').version")
+
+.PHONY: help install-hooks dev build test test-integration smoke lint fmt pages-preview publish-pages release clean hooks-pre-commit hooks-commit-msg hooks-pre-push
 
 help:
 	@printf "Targets:\n"
@@ -14,6 +16,7 @@ help:
 	@printf "  make fmt               Autoformat files\n"
 	@printf "  make pages-preview     Serve dist/ exactly as Pages would\n"
 	@printf "  make publish-pages     Publish dist/ to gh-pages branch\n"
+	@printf "  make release           Run checks, publish Pages, tag semver\n"
 	@printf "  make clean             Remove generated outputs\n"
 
 install-hooks:
@@ -51,6 +54,10 @@ pages-preview: build
 
 publish-pages: build
 	./scripts/publish-pages.sh
+
+release: lint test smoke publish-pages
+	git tag -a "$(VERSION)" -m "release: $(VERSION)"
+	git push origin "$(VERSION)"
 
 hooks-pre-commit:
 	.githooks/pre-commit
