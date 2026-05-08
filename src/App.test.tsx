@@ -5,7 +5,7 @@ describe('App', () => {
   it('shows repository, support, version, and commit links', () => {
     render(<App />);
 
-    expect(screen.getByRole('link', { name: /star on github/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /star/i })).toHaveAttribute(
       'href',
       'https://github.com/baditaflorin/openphoto-studio'
     );
@@ -15,5 +15,6 @@ describe('App', () => {
     );
     expect(screen.getByText(/v0.1.0/i)).toBeInTheDocument();
     expect(screen.getByText(/commit/i)).toBeInTheDocument();
+    expect(screen.getByTestId('dropzone')).toBeInTheDocument();
   });
 });
