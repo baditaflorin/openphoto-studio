@@ -18,7 +18,6 @@ const createId = () =>
 export function EditorApp() {
   const [source, setSource] = useState<ImageData | null>(null);
   const [processed, setProcessed] = useState<ImageData | null>(null);
-  const [originalBlob, setOriginalBlob] = useState<Blob | null>(null);
   const [originalName, setOriginalName] = useState('demo-photo.png');
   const [settings, setSettings] = useState<AdjustmentSettings>(defaultAdjustments);
   const [projectName, setProjectName] = useState('Untitled edit');
@@ -29,7 +28,7 @@ export function EditorApp() {
     tone: 'neutral',
     message: 'Ready. Open a photo or load the demo image.'
   });
-  const [undoStack, setUndoStack] = useState<ImageData[]>([]);
+  const [undoStack, setUndoStack] = useState<Array<{ source: ImageData; settings: AdjustmentSettings }>>([]);
   const [webGpuAvailable, setWebGpuAvailable] = useState(false);
   const renderToken = useRef(0);
 
@@ -83,7 +82,6 @@ export function EditorApp() {
     try {
       const loaded = await fileToImageData(file, name);
       setSource(loaded.imageData);
-      setOriginalBlob(loaded.blob);
       setOriginalName(loaded.name);
       setProjectName(loaded.name.replace(/\.[^.]+$/, '') || 'Untitled edit');
       setSettings(defaultAdjustments);
@@ -117,7 +115,10 @@ export function EditorApp() {
       setBusy(true);
       try {
         const next = await operation(base);
-        setUndoStack((stack) => [...stack.slice(-8), source]);
+        // Remember the adjustment settings that were live before this destructive
+        // edit flattened them into pixels, so Undo can restore them instead of
+        // silently dropping the user's slider work back to the defaults.
+        setUndoStack((stack) => [...stack.slice(-8), { source, settings }]);
         setSource(next);
         setSettings(defaultAdjustments);
         setCompareMode('edited');
@@ -131,7 +132,7 @@ export function EditorApp() {
         setBusy(false);
       }
     },
-    [processed, source]
+    [processed, settings, source]
   );
 
   const autoTune = useCallback(async () => {
@@ -153,20 +154,25 @@ export function EditorApp() {
   }, [source]);
 
   const saveProject = useCallback(async () => {
-    if (!source || !originalBlob) return;
-
-    const snapshot: ProjectSnapshot = {
-      id: createId(),
-      name: projectName.trim() || 'Untitled edit',
-      originalName,
-      updatedAt: new Date().toISOString(),
-      width: source.width,
-      height: source.height,
-      settings,
-      originalBlob
-    };
+    if (!source) return;
 
     try {
+      // Snapshot the current pixels, not the file the user originally imported.
+      // `source` already has any destructive edits (remove bg, upscale) baked
+      // in, so re-encoding it here is what makes Save/Load survive those tools
+      // instead of silently reverting to the pristine import on next load.
+      const currentBlob = await imageDataToPngBlob(source);
+      const snapshot: ProjectSnapshot = {
+        id: createId(),
+        name: projectName.trim() || 'Untitled edit',
+        originalName,
+        updatedAt: new Date().toISOString(),
+        width: source.width,
+        height: source.height,
+        settings,
+        originalBlob: currentBlob
+      };
+
       await saveLastProject(snapshot);
       setStatus({ tone: 'success', message: 'Saved locally in this browser.' });
     } catch (error) {
@@ -175,7 +181,7 @@ export function EditorApp() {
         message: error instanceof Error ? error.message : 'Local save failed.'
       });
     }
-  }, [originalBlob, originalName, projectName, settings, source]);
+  }, [originalName, projectName, settings, source]);
 
   const loadProject = useCallback(async () => {
     try {
@@ -202,12 +208,16 @@ export function EditorApp() {
   }, [loadImage]);
 
   const exportImage = useCallback(async () => {
-    if (!processed) return;
+    // Export must match what the canvas is currently showing: when the user is
+    // comparing against "Original", exporting should not silently swap in the
+    // edited pixels (see docs/phase3 audit + trl re-audit for the repro).
+    const activeImage = compareMode === 'original' ? source : processed;
+    if (!activeImage) return;
 
     const format = exportFormats.find((item) => item.mime === exportFormat) ?? exportFormats[0];
 
     try {
-      const blob = await imageDataToBlob(processed, format.mime);
+      const blob = await imageDataToBlob(activeImage, format.mime);
       downloadBlob(blob, `${projectName.trim() || 'openphoto-export'}.${format.extension}`);
       setStatus({ tone: 'success', message: `${format.label} export prepared in the browser.` });
     } catch (error) {
@@ -216,14 +226,14 @@ export function EditorApp() {
         message: error instanceof Error ? error.message : 'Export failed.'
       });
     }
-  }, [exportFormat, processed, projectName]);
+  }, [compareMode, exportFormat, processed, projectName, source]);
 
   const undo = useCallback(() => {
     setUndoStack((stack) => {
       const previous = stack.at(-1);
       if (!previous) return stack;
-      setSource(previous);
-      setSettings(defaultAdjustments);
+      setSource(previous.source);
+      setSettings(previous.settings);
       setStatus({ tone: 'success', message: 'Reverted the last destructive edit.' });
       return stack.slice(0, -1);
     });
